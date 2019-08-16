@@ -50,8 +50,10 @@ class GarderobelClient {
 
     final userRef = db.user(userId);
 
-    final hangerName = await hangerRef.get().then((item) => item.data[HangerRef.fieldId]);
-    final userName = await userRef.ref.get().then((item) => item.data[UserRef.fieldName]);
+    final hangerName =
+        await hangerRef.get().then((item) => item.data[HangerRef.fieldId]);
+    final userName =
+        await userRef.ref.get().then((item) => item.data[UserRef.fieldName]);
 
     final venueData = await venue.ref.get();
     final wardrobeData = await wardrobe.ref.get();
@@ -81,15 +83,14 @@ class GarderobelClient {
   }
 
   QrCode _tokenizeCode(String code) {
-    return QrCode("aaXt3hxtb5tf8aTz1BNp", "E8blVz5KBFZoLOTLJGf1", "vnEpTisjoygX3UJFaMy2");
+    return QrCode(
+        "aaXt3hxtb5tf8aTz1BNp", "E8blVz5KBFZoLOTLJGf1", "vnEpTisjoygX3UJFaMy2");
   }
 
-  Stream<Iterable<Reservation>> findReservationsForUser(String userId, {bool onlyActive: true}) {
-    return db
-        .user(userId)
-        .reservations(onlyActive: onlyActive)
-        .snapshots()
-        .map((qs) => qs.documents.map((ds) => ReservationRef.fromFirestore(ds)));
+  Stream<Iterable<Reservation>> findReservationsForUser(String userId,
+      {bool onlyActive: true}) {
+    return db.user(userId).reservations(onlyActive: onlyActive).snapshots().map(
+        (qs) => qs.documents.map((ds) => ReservationRef.fromFirestore(ds)));
   }
 
   Future requestCheckOut(DocumentReference reservation) {
@@ -104,18 +105,26 @@ class GarderobelClient {
     });
   }
 
+  Stream<Map<String, dynamic>> getCurrentUser() {
+    return Stream.fromIterable([
+      {'stripeId': 'cus_FXX6ahUoQ3Eqb7'}
+    ]);
+  }
+
   Future confirmCheckIn(DocumentReference reservation) {
     final HttpsCallable callable = cf.getHttpsCallable(
       functionName: 'confirmCheckIn',
     );
-    return callable.call(<String, dynamic>{'reservation': reservation.documentID});
+    return callable
+        .call(<String, dynamic>{'reservation': reservation.documentID});
   }
 
   Future confirmCheckOut(DocumentReference reservation) {
     final HttpsCallable callable = cf.getHttpsCallable(
       functionName: 'confirmCheckOut',
     );
-    return callable.call(<String, dynamic>{'reservation': reservation.documentID});
+    return callable
+        .call(<String, dynamic>{'reservation': reservation.documentID});
   }
 
   Future<void> confirmCheckInLocal(Reservation reservation) async {
