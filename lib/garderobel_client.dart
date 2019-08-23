@@ -18,61 +18,6 @@ class GarderobelClient {
   final Db db;
   final CloudFunctions cf = CloudFunctions(region: "europe-west2");
 
-  requestCheckIn(String qrCode, String userId) async {
-//    final HttpsCallable callable = cf.getHttpsCallable(
-//      functionName: 'requestCheckIn',
-//    );
-//    try {
-//      dynamic resp = await callable.call(<String, dynamic>{'code': qrCode});
-//      return resp.reservation;
-//    } on CloudFunctionsException catch (e) {
-//      return null;
-//    }
-
-    final code = _tokenizeCode(qrCode);
-    final venue = db.venue(code.venueId);
-    final wardrobe = venue.wardrobe(code.wardrobeId);
-    final section = wardrobe.section(code.sectionId);
-    final hangersRef = section.hangers;
-
-    final currentReservations = await section.findCurrentReservations(userId);
-    if (currentReservations.isNotEmpty) return Future.value(null);
-
-    final hangerSnapshot = await section.findAvailableHanger();
-    if (hangerSnapshot == null) {
-      return Future.value(null);
-    }
-    final hangerRef = hangerSnapshot.reference;
-    hangerRef.setData({
-      'state': HangerState.UNAVAILABLE.index,
-      'stateUpdated': FieldValue.serverTimestamp(),
-    }, merge: true);
-
-    final userRef = db.user(userId);
-
-    final hangerName =
-        await hangerRef.get().then((item) => item.data[HangerRef.fieldId]);
-    final userName =
-        await userRef.ref.get().then((item) => item.data[UserRef.fieldName]);
-
-    final venueData = await venue.ref.get();
-    final wardrobeData = await wardrobe.ref.get();
-
-    final reservationData = {
-      ReservationRef.jsonSection: hangersRef.parent(),
-      ReservationRef.jsonHanger: hangerRef,
-      ReservationRef.jsonHangerName: hangerName,
-      ReservationRef.jsonUser: userRef.ref,
-      ReservationRef.jsonVenueName: venueData.data[VenueRef.fieldName],
-      ReservationRef.jsonWardrobeName: wardrobeData.data[WardrobeRef.fieldName],
-      ReservationRef.jsonUserName: userName,
-      ReservationRef.jsonState: ReservationState.CHECKING_IN.index,
-      ReservationRef.jsonReservationTime: FieldValue.serverTimestamp(),
-    };
-
-    return db.reservations.add(reservationData);
-  }
-
   findReservationsForCode(String qrCode, String userId) async {
     final code = _tokenizeCode(qrCode);
     return db
