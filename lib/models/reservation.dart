@@ -19,28 +19,29 @@ class ReservationRef extends Document {
   static const jsonUser = 'user';
   static const jsonUserName = 'userName';
   static const jsonState = 'state';
+  static const jsonVisibleInApp = 'visibleInApp';
   static const jsonColor = 'color';
   static const jsonPaymentState = 'paymentStatus';
 
   static Reservation fromFirestore(DocumentSnapshot ds) {
     final data = ds.data;
     return Reservation(
-        ref: ds.reference,
-        docId: ds.documentID,
-        checkIn: data[ReservationRef.jsonCheckIn],
-        checkOut: data[ReservationRef.jsonCheckOut],
-        stateUpdated: data[ReservationRef.jsonStateUpdated],
-        state: ReservationState.values[data[ReservationRef.jsonState] ?? 1],
-        reservationTime: data[ReservationRef.jsonReservationTime],
-        hanger: data[ReservationRef.jsonHanger],
-        venueName: data[ReservationRef.jsonVenueName],
-        wardrobeName: data[ReservationRef.jsonWardrobeName],
-        section: data[ReservationRef.jsonSection],
-        user: data[ReservationRef.jsonUser],
-        userName: data[ReservationRef.jsonUserName],
-        hangerName: data[ReservationRef.jsonHangerName],
-        color: data[ReservationRef.jsonColor],
-        paymentState: PaymentState.values[data[ReservationRef.jsonPaymentState] + 2]);
+      ref: ds.reference,
+      docId: ds.documentID,
+      checkIn: data[ReservationRef.jsonCheckIn],
+      checkOut: data[ReservationRef.jsonCheckOut],
+      stateUpdated: data[ReservationRef.jsonStateUpdated],
+      state: ReservationState.values[data[ReservationRef.jsonState]],
+      reservationTime: data[ReservationRef.jsonReservationTime],
+      hanger: data[ReservationRef.jsonHanger],
+      venueName: data[ReservationRef.jsonVenueName],
+      wardrobeName: data[ReservationRef.jsonWardrobeName],
+      section: data[ReservationRef.jsonSection],
+      user: data[ReservationRef.jsonUser],
+      userName: data[ReservationRef.jsonUserName],
+      hangerName: data[ReservationRef.jsonHangerName],
+      color: data[ReservationRef.jsonColor],
+    );
   }
 }
 
@@ -57,7 +58,6 @@ class Reservation {
   final Timestamp reservationTime;
   final Timestamp stateUpdated;
   final ReservationState state;
-  final PaymentState paymentState;
   final DocumentReference hanger;
   final DocumentReference section;
   final DocumentReference user;
@@ -65,7 +65,6 @@ class Reservation {
   Reservation({
     @required this.ref,
     @required this.color,
-    @required this.paymentState,
     @required this.docId,
     @required this.checkIn,
     @required this.checkOut,
@@ -82,5 +81,13 @@ class Reservation {
   });
 }
 
-enum ReservationState { CHECK_IN_REJECTED, CHECKED_OUT, CHECKED_IN, CHECKING_OUT, CHECKING_IN }
-enum PaymentState { REFUNDED, CANCELED, INITIAL, RESERVED, CAPTURED }
+enum ReservationState {
+  NONE,
+  PAYMENT_METHOD_REQUIRED,
+  PAYMENT_AUTH_REQUIRED,
+  PAYMENT_RESERVED,
+  CHECKED_IN,
+  LOST,
+  CHECKING_OUT,
+  CHECKED_OUT
+}

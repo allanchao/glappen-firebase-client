@@ -15,9 +15,7 @@ class UserRef extends Document {
 
     return onlyActive
         ? query
-            .where(ReservationRef.jsonState,
-                isGreaterThanOrEqualTo: ReservationState.CHECKED_IN.index)
-            .orderBy(ReservationRef.jsonState, descending: true)
+            .where(ReservationRef.jsonVisibleInApp, isEqualTo: true)
             .orderBy(ReservationRef.jsonReservationTime, descending: true)
         : query.orderBy(ReservationRef.jsonCheckOut, descending: true);
   }
