@@ -6,9 +6,6 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'db.dart';
 import 'models/hanger.dart';
 import 'models/reservation.dart';
-import 'models/user.dart';
-import 'models/venue.dart';
-import 'models/wardrobe.dart';
 
 class GarderobelClient {
   GarderobelClient(this._fireStore) : db = Db(_fireStore);
@@ -28,14 +25,15 @@ class GarderobelClient {
   }
 
   QrCode _tokenizeCode(String code) {
-    return QrCode(
-        "aaXt3hxtb5tf8aTz1BNp", "E8blVz5KBFZoLOTLJGf1", "vnEpTisjoygX3UJFaMy2");
+    return QrCode("aaXt3hxtb5tf8aTz1BNp", "E8blVz5KBFZoLOTLJGf1", "vnEpTisjoygX3UJFaMy2");
   }
 
-  Stream<Iterable<Reservation>> findReservationsForUser(String userId,
-      {bool onlyActive: true}) {
-    return db.user(userId).reservations(onlyActive: onlyActive).snapshots().map(
-        (qs) => qs.documents.map((ds) => ReservationRef.fromFirestore(ds)));
+  Stream<Iterable<Reservation>> findReservationsForUser(String userId, {bool onlyActive: true}) {
+    return db
+        .user(userId)
+        .reservations(onlyActive: onlyActive)
+        .snapshots()
+        .map((qs) => qs.documents.map((ds) => ReservationRef.fromFirestore(ds)));
   }
 
   Future requestCheckOut(DocumentReference reservation) {
@@ -60,16 +58,14 @@ class GarderobelClient {
     final HttpsCallable callable = cf.getHttpsCallable(
       functionName: 'confirmCheckIn',
     );
-    return callable
-        .call(<String, dynamic>{'reservation': reservation.documentID});
+    return callable.call(<String, dynamic>{'reservation': reservation.documentID});
   }
 
   Future confirmCheckOut(DocumentReference reservation) {
     final HttpsCallable callable = cf.getHttpsCallable(
       functionName: 'confirmCheckOut',
     );
-    return callable
-        .call(<String, dynamic>{'reservation': reservation.documentID});
+    return callable.call(<String, dynamic>{'reservation': reservation.documentID});
   }
 
   Future<void> confirmCheckInLocal(Reservation reservation) async {
@@ -93,6 +89,13 @@ class GarderobelClient {
     }).then((value) => true, onError: (error) {
       print(error);
       return false;
+    });
+  }
+
+  Future<void> cancelCheckOut(String reservationId) {
+    return db.reservation(reservationId).ref.updateData({
+      ReservationRef.jsonState: ReservationState.CHECKED_IN.index,
+      ReservationRef.jsonStateUpdated: FieldValue.serverTimestamp()
     });
   }
 }
