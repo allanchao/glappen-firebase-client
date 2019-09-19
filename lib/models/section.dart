@@ -20,9 +20,4 @@ class SectionRef extends Document {
     else
       return documents.documents.first;
   }
-
-  Future<List<DocumentSnapshot>> findCurrentReservations(String userId) async {
-    // TODO
-    return Future.value([]);
-  }
 }

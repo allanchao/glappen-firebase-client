@@ -15,25 +15,15 @@ class GarderobelClient {
   final Db db;
   final CloudFunctions cf = CloudFunctions(region: "europe-west2");
 
-  findReservationsForCode(String qrCode, String userId) async {
-    final code = _tokenizeCode(qrCode);
-    return db
-        .venue(code.venueId)
-        .wardrobe(code.wardrobeId)
-        .section(code.sectionId)
-        .findCurrentReservations(userId);
-  }
-
   QrCode _tokenizeCode(String code) {
-    return QrCode("aaXt3hxtb5tf8aTz1BNp", "E8blVz5KBFZoLOTLJGf1", "vnEpTisjoygX3UJFaMy2");
+    return QrCode(
+        "aaXt3hxtb5tf8aTz1BNp", "E8blVz5KBFZoLOTLJGf1", "vnEpTisjoygX3UJFaMy2");
   }
 
-  Stream<Iterable<Reservation>> findReservationsForUser(String userId, {bool onlyActive: true}) {
-    return db
-        .user(userId)
-        .reservations(onlyActive: onlyActive)
-        .snapshots()
-        .map((qs) => qs.documents.map((ds) => ReservationRef.fromFirestore(ds)));
+  Stream<Iterable<Reservation>> findReservationsForUser(String userId,
+      {bool onlyActive: true}) {
+    return db.user(userId).reservations(onlyActive: onlyActive).snapshots().map(
+        (qs) => qs.documents.map((ds) => ReservationRef.fromFirestore(ds)));
   }
 
   Future requestCheckOut(DocumentReference reservation) {
@@ -58,14 +48,16 @@ class GarderobelClient {
     final HttpsCallable callable = cf.getHttpsCallable(
       functionName: 'confirmCheckIn',
     );
-    return callable.call(<String, dynamic>{'reservation': reservation.documentID});
+    return callable
+        .call(<String, dynamic>{'reservation': reservation.documentID});
   }
 
   Future confirmCheckOut(DocumentReference reservation) {
     final HttpsCallable callable = cf.getHttpsCallable(
       functionName: 'confirmCheckOut',
     );
-    return callable.call(<String, dynamic>{'reservation': reservation.documentID});
+    return callable
+        .call(<String, dynamic>{'reservation': reservation.documentID});
   }
 
   Future<void> confirmCheckInLocal(Reservation reservation) async {
